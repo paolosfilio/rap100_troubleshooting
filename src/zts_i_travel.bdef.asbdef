@@ -1,0 +1,73 @@
+managed implementation in class ZTS_BP_TRAVEL unique;
+strict ( 2 );
+with draft;
+
+define behavior for ZTS_I_TRAVEL alias Travel
+persistent table zts_atravel
+draft table zts_dtravel
+etag master LocalLastChangedAt
+lock master total etag LastChangedAt
+authorization master ( global )
+{
+  field ( readonly )
+  CreatedAt,
+  CreatedBy,
+  LastChangedAt,
+  LocalLastChangedAt,
+  LocalLastChangedBy,
+  TravelID;
+
+  field ( mandatory )
+  CustomerID,
+  BeginDate,
+  EndDate;
+
+  field ( numbering : managed )
+  TravelID;
+
+
+  create;
+  update ( features : instance );
+  delete ( features : instance );
+
+  draft action ( features : instance ) Edit;
+  draft action Activate;
+  draft action Discard;
+  draft action Resume;
+  draft determine action Prepare
+  {
+    validation validateDates;
+  }
+
+  determination setStatusToOpen on modify { create; }
+
+  validation validateCustomer on save { create; field CustomerID; }
+  validation validateDates on save { create; field BeginDate, EndDate; }
+
+  action ( features : instance ) deductDiscount parameter /dmo/a_travel_discount result [1] $self;
+  action ( features : instance ) acceptTravel result [1] $self;
+  action ( features : instance ) rejectTravel result [1] $self;
+  factory action copyTravel [1];
+
+  mapping for ZTS_ATRAVEL
+  {
+    TravelID = TRAVEL_ID;
+    AgencyID = AGENCY_ID;
+    CustomerID = CUSTOMER_ID;
+    BeginDate = BEGIN_DATE;
+    EndDate = END_DATE;
+    BookingFee = BOOKING_FEE;
+    TotalPrice = TOTAL_PRICE;
+    CurrencyCode = CURRENCY_CODE;
+    Description = DESCRIPTION;
+    OverallStatus = OVERALL_STATUS;
+    Attachment = ATTACHMENT;
+    MimeType = MIME_TYPE;
+    FileName = FILE_NAME;
+    CreatedBy = CREATED_BY;
+    CreatedAt = CREATED_AT;
+    LocalLastChangedBy = LOCAL_LAST_CHANGED_BY;
+    LocalLastChangedAt = LOCAL_LAST_CHANGED_AT;
+    LastChangedAt = LAST_CHANGED_AT;
+  }
+}
